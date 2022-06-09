@@ -1,13 +1,14 @@
 package hu.bme.mit.spaceship;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic.Verification;
-import org.mockito.internal.verification.VerificationModeFactory;
-import org.mockito.verification.VerificationMode;
-
-import static org.mockito.Mockito.*;
 
 public class GT4500Test {
 
@@ -159,6 +160,56 @@ public class GT4500Test {
     // Assert
     assertEquals(true, result);
     verify(torpedoStore1, times(2)).fire(1);
+    verify(torpedoStore2, never()).fire(1);
+  }
+
+  @Test
+  public void fireTorpedo_Single_Both_Empty() {
+    // Arrange
+    when(torpedoStore1.isEmpty()).thenReturn(true);
+    when(torpedoStore2.isEmpty()).thenReturn(true);
+
+    // Act
+    boolean result = ship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertEquals(false, result);
+    verify(torpedoStore1, never()).fire(1);
+    verify(torpedoStore2, never()).fire(1);
+  }
+
+  @Test
+  public void fireTorpedo_Single_Both_Empty_Primary_Fired_Last() {
+    // Arrange
+    when(torpedoStore1.isEmpty()).thenReturn(false);
+    when(torpedoStore1.getTorpedoCount()).thenReturn(1);
+    when(torpedoStore1.fire(1)).thenReturn(true);
+    when(torpedoStore2.isEmpty()).thenReturn(true);
+
+    ship.fireTorpedo(FiringMode.SINGLE);
+    when(torpedoStore1.isEmpty()).thenReturn(true);
+
+    // Act
+    boolean result = ship.fireTorpedo(FiringMode.SINGLE);
+
+    // Assert
+    assertEquals(false, result);
+    verify(torpedoStore1, times(1)).fire(1);
+    verify(torpedoStore2, never()).fire(1);
+  }
+
+  @Test
+  public void fireTorpedo_All_Both_Empty() {
+    // Arrange
+    when(torpedoStore1.isEmpty()).thenReturn(true);
+    when(torpedoStore2.isEmpty()).thenReturn(true);
+
+    // Act
+    boolean result = ship.fireTorpedo(FiringMode.ALL);
+
+    // Assert
+    assertEquals(false, result);
+    verify(torpedoStore1, never()).fire(1);
     verify(torpedoStore2, never()).fire(1);
   }
 }
